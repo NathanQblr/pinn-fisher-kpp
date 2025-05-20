@@ -3,24 +3,56 @@ from skfem import MeshLine, Basis, asm, solve, condense
 from skfem.element import ElementLineP1
 from skfem.models.poisson import laplace, mass
 
-def solve_fisher_1d(D=0.1, r=2.0, K=1.0,
+def solve_fisher_1d(D=0.1, r=10.0, K=1.0,
                     n_el=100, t_final=1.0, dt=1e-3,
                     scheme="cn", bc_type="neumann"):
     """
-    Solve Fisher-KPP in 1D with FEM in space and time-stepping.
+    Solve the Fisher-KPP equation in 1D using the Finite Element Method (FEM)
+    for spatial discretization and time-stepping schemes (Euler or Crank–Nicolson).
+
+    Equation:
+        ∂u/∂t = D ∂²u/∂x² + r u (1 - u / K)
 
     Parameters
     ----------
-    scheme : str
-        "euler" or "cn" (Crank–Nicolson)
-    bc_type : str
-        "dirichlet" or "neumann"
+    D : float, optional
+        Diffusion coefficient (default: 0.1)
+
+    r : float, optional
+        Growth rate of the logistic term (default: 10.0)
+
+    K : float, optional
+        Carrying capacity, saturation value for u (default: 1.0)
+
+    n_el : int, optional
+        Number of elements in the spatial mesh (default: 100)
+
+    t_final : float, optional
+        Final time of simulation (default: 1.0)
+
+    dt : float, optional
+        Time step for the temporal discretization (default: 1e-3)
+
+    scheme : str, optional
+        Time-stepping scheme: 
+        - "euler" for explicit Euler
+        - "cn" for Crank–Nicolson (default: "cn")
+
+    bc_type : str, optional
+        Type of boundary condition:
+        - "dirichlet" for u = 0 on the boundaries
+        - "neumann" for ∂u/∂x = 0 on the boundaries (default: "neumann")
 
     Returns
     -------
-    xs : ndarray, spatial grid
-    ts : ndarray, time grid
+    xs : ndarray
+        Spatial coordinates of the FEM nodes
+
+    ts : ndarray
+        Array of time points from 0 to t_final (inclusive)
+
     solution : ndarray of shape (len(ts), len(xs))
+        Solution matrix u(t, x), where each row corresponds to a time step
     """
     # -- FEM setup --
     mesh = MeshLine(np.linspace(0.0, 1.0, n_el + 1))
